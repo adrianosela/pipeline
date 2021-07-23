@@ -24,11 +24,13 @@ func newSource(name string, action ingest) *source {
 }
 
 func (s *source) run() {
+	log.Printf("[%s] Starting...\n", s.name)
+
 	for {
 		recvd, err := s.action()
 		if err != nil {
 			if err == ErrorSourceFinished {
-				log.Printf("[%s] Source finished. Quitting...\n", s.name)
+				log.Printf("[%s] Source finished. Closing output channel...\n", s.name)
 				close(s.out)
 				break
 			}

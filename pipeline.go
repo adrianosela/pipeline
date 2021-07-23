@@ -1,7 +1,5 @@
 package pipeline
 
-import "log"
-
 // Pipeline represents a stream processing pipeline
 type Pipeline struct {
 	source *source
@@ -39,13 +37,10 @@ func (p *Pipeline) SetSink(name string, commit publish) {
 // Run runs the pipeline and blocks until done
 func (p *Pipeline) Run() {
 	go p.sink.run()
-	log.Printf("[%s] starting...\n", p.sink.name)
 	for i := len(p.stages) - 1; i >= 0; i-- {
 		go p.stages[i].run()
-		log.Printf("[%s] starting...\n", p.stages[i].name)
 	}
 	go p.source.run()
-	log.Printf("[%s] starting...\n", p.source.name)
 
 	for {
 		<-p.sink.done

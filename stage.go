@@ -19,6 +19,8 @@ func newStage(name string, action transform, in chan interface{}) *stage {
 }
 
 func (s *stage) run() {
+	log.Printf("[%s] Starting...\n", s.name)
+
 	for {
 		received, ok := <-s.in
 		if !ok {
