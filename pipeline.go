@@ -1,5 +1,7 @@
 package pipeline
 
+import "log"
+
 // Pipeline represents a stream processing pipeline
 type Pipeline struct {
 	source *source
@@ -14,6 +16,10 @@ func New() *Pipeline {
 
 // AddStage adds a stage to the processing pipeline
 func (p *Pipeline) AddStage(name string, transform transform) {
+	if p.sink != nil {
+		log.Fatal("cannot add stages after sink is set")
+	}
+
 	if len(p.stages) == 0 {
 		p.stages = append(p.stages, newStage(name, transform, p.source.out))
 	} else {

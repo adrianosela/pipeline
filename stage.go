@@ -2,6 +2,8 @@ package pipeline
 
 import "log"
 
+type transform func(interface{}) (interface{}, error)
+
 type stage struct {
 	name      string
 	transform transform

@@ -2,6 +2,8 @@ package pipeline
 
 import "log"
 
+type publish func(interface{}) error
+
 type sink struct {
 	name   string
 	action publish

@@ -9,6 +9,8 @@ import (
 // action when the source has no input data left
 var ErrorSourceFinished = errors.New("source finished")
 
+type ingest func() (interface{}, error)
+
 type source struct {
 	name   string
 	action ingest
