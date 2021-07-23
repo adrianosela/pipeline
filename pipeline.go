@@ -1,41 +1,54 @@
 package pipeline
 
+import "log"
+
 // Pipeline represents a stream processing pipeline
 type Pipeline struct {
-	dangling chan interface{} // reference to last unwired output channel
-	stages   []*stage
+	source *source
+	stages []*stage
+	sink   *sink
 }
 
 // New is the pipeline constructor
-func New(ingest func(chan interface{})) *Pipeline {
-	p := &Pipeline{
-		dangling: make(chan interface{}),
-		stages:   []*stage{},
-	}
-
-	go ingest(p.dangling)
-
-	return p
+func New() *Pipeline {
+	return &Pipeline{stages: []*stage{}}
 }
 
 // AddStage adds a stage to the processing pipeline
-func (p *Pipeline) AddStage(name string, action action) {
-	p.stages = append(p.stages, newStage(name, action, p.dangling))
-	p.dangling = p.stages[len(p.stages)-1].out
+func (p *Pipeline) AddStage(name string, transform transform) {
+	if len(p.stages) == 0 {
+		p.stages = append(p.stages, newStage(name, transform, p.source.out))
+	} else {
+		p.stages = append(p.stages, newStage(name, transform, p.stages[len(p.stages)-1].out))
+	}
 }
 
-// Run kicks-off pipeline stage threads (in reverse order)
-// then blocks until the dangling output channel is closed
-func (p *Pipeline) Run() {
-	for i := len(p.stages) - 1; i >= 0; i-- {
-		// TODO: make each stage multithreaded
-		go p.stages[i].run()
-	}
+// SetSource sets data ingestion source in the pipeline
+func (p *Pipeline) SetSource(name string, ingest ingest) {
+	p.source = newSource(name, ingest)
+}
 
-	// drain dangling output
+// SetSink sets data sink in the pipeline
+func (p *Pipeline) SetSink(name string, commit publish) {
+	if len(p.stages) == 0 {
+		p.sink = newSink(name, commit, p.source.out)
+	}
+	p.sink = newSink(name, commit, p.stages[len(p.stages)-1].out)
+}
+
+// Run runs the pipeline and blocks until done
+func (p *Pipeline) Run() {
+	go p.sink.run()
+	log.Printf("[%s] starting...\n", p.sink.name)
+	for i := len(p.stages) - 1; i >= 0; i-- {
+		go p.stages[i].run()
+		log.Printf("[%s] starting...\n", p.stages[i].name)
+	}
+	go p.source.run()
+	log.Printf("[%s] starting...\n", p.source.name)
+
 	for {
-		if _, ok := <-p.dangling; !ok {
-			break
-		}
+		<-p.sink.done
+		break
 	}
 }
