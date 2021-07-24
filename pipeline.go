@@ -14,6 +14,11 @@ func New() *Pipeline {
 	return &Pipeline{stages: []*stage{}}
 }
 
+// SetSource sets data ingestion source in the pipeline
+func (p *Pipeline) SetSource(name string, ingest ingest) {
+	p.source = newSource(name, ingest)
+}
+
 // AddStage adds a stage to the processing pipeline
 func (p *Pipeline) AddStage(name string, threads int, transform transform) {
 	if p.sink != nil {
@@ -28,17 +33,13 @@ func (p *Pipeline) AddStage(name string, threads int, transform transform) {
 	p.stages = append(p.stages, newStage(name, threads, transform, inputChan))
 }
 
-// SetSource sets data ingestion source in the pipeline
-func (p *Pipeline) SetSource(name string, ingest ingest) {
-	p.source = newSource(name, ingest)
-}
-
 // SetSink sets data sink in the pipeline
-func (p *Pipeline) SetSink(name string, commit publish) {
-	if len(p.stages) == 0 {
-		p.sink = newSink(name, commit, p.source.out)
+func (p *Pipeline) SetSink(name string, threads int, commit publish) {
+	inputChan := p.source.out
+	if len(p.stages) > 0 {
+		inputChan = p.stages[len(p.stages)-1].out
 	}
-	p.sink = newSink(name, commit, p.stages[len(p.stages)-1].out)
+	p.sink = newSink(name, threads, commit, inputChan)
 }
 
 // Run runs the pipeline and blocks until done

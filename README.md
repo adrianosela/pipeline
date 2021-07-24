@@ -1,2 +1,3 @@
 # pipelines
-staged pipeline framework in go
+
+staged stream-processing pipeline framework in go
