@@ -21,8 +21,6 @@ func newSink(name string, action publish, in chan interface{}) *sink {
 }
 
 func (s *sink) run() {
-	log.Printf("[%s] Starting...\n", s.name)
-
 	for {
 		received, ok := <-s.in
 		if !ok {

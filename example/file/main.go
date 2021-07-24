@@ -35,7 +35,7 @@ func main() {
 		return scanner.Text(), nil
 	})
 
-	p.AddStage("trimUrlPrefix", func(in interface{}) (interface{}, error) {
+	p.AddStage("trimUrlPrefix", 3, func(in interface{}) (interface{}, error) {
 		url, ok := in.(string)
 		if !ok {
 			return nil, fmt.Errorf("received non string input")
@@ -43,7 +43,7 @@ func main() {
 		return strings.TrimPrefix(url, "https://github.com/"), nil
 	})
 
-	p.AddStage("trimRepoOrgPrefix", func(in interface{}) (interface{}, error) {
+	p.AddStage("trimRepoOrgPrefix", 2, func(in interface{}) (interface{}, error) {
 		url, ok := in.(string)
 		if !ok {
 			return nil, fmt.Errorf("received non string input")
