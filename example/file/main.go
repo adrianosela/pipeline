@@ -3,12 +3,28 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/adrianosela/pipeline"
 )
+
+var (
+	inFile, _  = os.Open("file.txt")
+	outFile, _ = os.Create("out.txt")
+
+	scanner = bufio.NewScanner(inFile)
+)
+
+func readRepoURL() (interface{}, error) {
+	if ok := scanner.Scan(); !ok {
+		return nil, pipeline.ErrorSourceFinished
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return scanner.Text(), nil
+}
 
 func trimURLPrefix(in interface{}) (interface{}, error) {
 	url, ok := in.(string)
@@ -32,38 +48,27 @@ func trimRepoOrgPrefix(in interface{}) (interface{}, error) {
 	return strings.Join(parts[1:], "/"), nil
 }
 
-func printRepoName(in interface{}) error {
+func writeRepoName(in interface{}) error {
 	repoName, ok := in.(string)
 	if !ok {
 		return fmt.Errorf("received non string input")
 	}
 
-	fmt.Println(repoName)
+	if n, err := outFile.Write([]byte(repoName + "\n")); n != len(repoName) || err != nil {
+		return fmt.Errorf("error writing output: %s", repoName)
+	}
+
 	return nil
 }
 
 func main() {
-	file, err := os.Open("file.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	readFileLine := func() (interface{}, error) {
-		if ok := scanner.Scan(); !ok {
-			return nil, pipeline.ErrorSourceFinished
-		}
-		if err := scanner.Err(); err != nil {
-			return nil, err
-		}
-		return scanner.Text(), nil
-	}
+	defer inFile.Close()
+	defer outFile.Close()
 
 	p := pipeline.New()
-	p.SetSource("readFileLines", readFileLine)
+	p.SetSource("readRepoURL", readRepoURL)
 	p.AddStage("trimURLPrefix", 5, trimURLPrefix)
 	p.AddStage("trimRepoOrgPrefix", 5, trimRepoOrgPrefix)
-	p.SetSink("printRepoName", 5, printRepoName)
+	p.SetSink("writeRepoName", 5, writeRepoName)
 	p.Run()
 }
