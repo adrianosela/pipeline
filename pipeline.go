@@ -48,8 +48,5 @@ func (p *Pipeline) Run() {
 	}
 	go p.source.run()
 
-	for {
-		<-p.sink.done
-		break
-	}
+	<-p.sink.done
 }
