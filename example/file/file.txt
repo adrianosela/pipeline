@@ -1,3 +1,11 @@
 https://github.com/adrianosela/padl
-https://github.com/adrianosela/vpn
 https://github.com/adrianosela/rdtp
+https://github.com/adrianosela/sslmgr
+https://github.com/adrianosela/middleman
+https://github.com/adrianosela/spoof
+https://github.com/adrianosela/resume
+https://github.com/adrianosela/multikey
+https://github.com/adrianosela/iprepd-firewall
+https://github.com/adrianosela/interview
+https://github.com/adrianosela/ecdh
+https://github.com/adrianosela/vpn
