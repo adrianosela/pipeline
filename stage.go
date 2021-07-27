@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"log"
-	"sync"
 )
 
 type transform func(interface{}) (interface{}, error)
@@ -28,18 +27,17 @@ func newStage(name string, threads int, action transform, in chan interface{}) *
 func (s *stage) run() {
 	log.Printf("[STAGE:<%s>] Starting...\n", s.name)
 
-	threaded(s.threads, func(threadId int, wg *sync.WaitGroup) {
-		defer wg.Done()
+	threaded(s.threads, func(threadID int) {
 		for {
 			received, ok := <-s.in
 			if !ok {
-				log.Printf("[STAGE:<%s-%d>] Input channel closed. Thread terminating...\n", s.name, threadId)
+				log.Printf("[STAGE:<%s-%d>] Input channel closed. Thread terminating...\n", s.name, threadID)
 				break
 			}
 
 			processed, err := s.transform(received)
 			if err != nil {
-				log.Printf("[STAGE:<%s-%d>] Processing error: %s.\n", s.name, threadId, err)
+				log.Printf("[STAGE:<%s-%d>] Processing error: %s.\n", s.name, threadID, err)
 				continue
 			}
 
