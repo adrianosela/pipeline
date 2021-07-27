@@ -15,8 +15,8 @@ func New() *Pipeline {
 }
 
 // SetSource sets data ingestion source in the pipeline
-func (p *Pipeline) SetSource(name string, ingest ingest) {
-	p.source = newSource(name, ingest)
+func (p *Pipeline) SetSource(name string, threads int, ingest ingest) {
+	p.source = newSource(name, threads, ingest)
 }
 
 // AddStage adds a stage to the processing pipeline

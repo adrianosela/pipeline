@@ -16,6 +16,7 @@ var (
 	scanner = bufio.NewScanner(inFile)
 )
 
+// NOTE: bufio.Scanner is not thread safe -- run singlethreaded only
 func readRepoURL() (interface{}, error) {
 	if ok := scanner.Scan(); !ok {
 		return nil, pipeline.ErrorSourceFinished
@@ -62,7 +63,7 @@ func main() {
 	defer outFile.Close()
 
 	p := pipeline.New()
-	p.SetSource("readRepoURL", readRepoURL)
+	p.SetSource("readRepoURL", 1, readRepoURL)
 	p.AddStage("trimURLPrefix", 5, trimURLPrefix)
 	p.AddStage("trimRepoOrgPrefix", 5, trimRepoOrgPrefix)
 	p.SetSink("writeRepoName", 5, writeRepoName)

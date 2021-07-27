@@ -12,36 +12,41 @@ var ErrorSourceFinished = errors.New("source finished")
 type ingest func() (interface{}, error)
 
 type source struct {
-	name   string
-	action ingest
-	out    chan interface{}
+	name    string
+	threads int
+	action  ingest
+	out     chan interface{}
 }
 
-func newSource(name string, action ingest) *source {
+func newSource(name string, threads int, action ingest) *source {
 	return &source{
-		name:   name,
-		action: action,
-		out:    make(chan interface{}),
+		name:    name,
+		threads: threads,
+		action:  action,
+		out:     make(chan interface{}),
 	}
 }
 
 func (s *source) run() {
 	log.Printf("[SOURCE:<%s>] Starting...\n", s.name)
 
-	for {
-		recvd, err := s.action()
-		if err != nil {
-			if err == ErrorSourceFinished {
-				break
+	threaded(s.threads, func(threadID int) {
+		for {
+			recvd, err := s.action()
+			if err != nil {
+				if err == ErrorSourceFinished {
+					log.Printf("[SOURCE:<%s-%d>] Source finished. Thread terminating...\n", s.name, threadID)
+					break
+				}
+
+				log.Printf("[SOURCE:<%s-%d>] Ingestion error: %s.\n", s.name, threadID, err)
+				continue
 			}
 
-			log.Printf("[SOURCE:<%s>] Ingestion error: %s.\n", s.name, err)
-			continue
+			s.out <- recvd
 		}
+	})
 
-		s.out <- recvd
-	}
-
-	log.Printf("[SOURCE:<%s>] Source finished. Closing output channel...\n", s.name)
+	log.Printf("[SOURCE:<%s>] All threads terminated. Closing output channel...\n", s.name)
 	close(s.out)
 }
