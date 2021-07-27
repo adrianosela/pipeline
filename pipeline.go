@@ -15,12 +15,12 @@ func New() *Pipeline {
 }
 
 // SetSource sets data ingestion source in the pipeline
-func (p *Pipeline) SetSource(name string, threads int, ingest ingest) {
-	p.source = newSource(name, threads, ingest)
+func (p *Pipeline) SetSource(name string, threads int, outChanSize int, ingest ingest) {
+	p.source = newSource(name, threads, outChanSize, ingest)
 }
 
 // AddStage adds a stage to the processing pipeline
-func (p *Pipeline) AddStage(name string, threads int, transform transform) {
+func (p *Pipeline) AddStage(name string, threads int, outChanSize int, transform transform) {
 	if p.sink != nil {
 		log.Fatal("cannot add stages after sink is set")
 	}
@@ -28,7 +28,7 @@ func (p *Pipeline) AddStage(name string, threads int, transform transform) {
 	if len(p.stages) > 0 {
 		inputChan = p.stages[len(p.stages)-1].out
 	}
-	p.stages = append(p.stages, newStage(name, threads, transform, inputChan))
+	p.stages = append(p.stages, newStage(name, threads, outChanSize, transform, inputChan))
 }
 
 // SetSink sets data sink in the pipeline

@@ -63,9 +63,9 @@ func main() {
 	defer outFile.Close()
 
 	p := pipeline.New()
-	p.SetSource("readRepoURL", 1, readRepoURL)
-	p.AddStage("trimURLPrefix", 5, trimURLPrefix)
-	p.AddStage("trimRepoOrgPrefix", 5, trimRepoOrgPrefix)
+	p.SetSource("readRepoURL", 1, 1, readRepoURL)
+	p.AddStage("trimURLPrefix", 5, 1, trimURLPrefix)
+	p.AddStage("trimRepoOrgPrefix", 5, 1, trimRepoOrgPrefix)
 	p.SetSink("writeRepoName", 5, writeRepoName)
 	p.Run()
 }

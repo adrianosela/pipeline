@@ -18,12 +18,12 @@ type source struct {
 	out     chan interface{}
 }
 
-func newSource(name string, threads int, action ingest) *source {
+func newSource(name string, threads int, chanSize int, action ingest) *source {
 	return &source{
 		name:    name,
 		threads: threads,
 		action:  action,
-		out:     make(chan interface{}),
+		out:     make(chan interface{}, chanSize),
 	}
 }
 

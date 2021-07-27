@@ -14,13 +14,13 @@ type stage struct {
 	out       chan interface{}
 }
 
-func newStage(name string, threads int, action transform, in chan interface{}) *stage {
+func newStage(name string, threads int, chanSize int, action transform, in chan interface{}) *stage {
 	return &stage{
 		name:      name,
 		threads:   threads,
 		transform: action,
 		in:        in,
-		out:       make(chan interface{}),
+		out:       make(chan interface{}, chanSize),
 	}
 }
 
