@@ -39,12 +39,10 @@ func trimRepoOrgPrefix(in interface{}) (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("received non string input")
 	}
-
 	parts := strings.Split(url, "/")
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("malformed url")
 	}
-
 	return strings.Join(parts[1:], "/"), nil
 }
 
@@ -53,11 +51,9 @@ func writeRepoName(in interface{}) error {
 	if !ok {
 		return fmt.Errorf("received non string input")
 	}
-
 	if n, err := outFile.Write([]byte(repoName + "\n")); n != len(repoName) + 1|| err != nil {
 		return fmt.Errorf("error writing output: %s", repoName)
 	}
-
 	return nil
 }
 
