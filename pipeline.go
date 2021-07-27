@@ -24,12 +24,10 @@ func (p *Pipeline) AddStage(name string, threads int, transform transform) {
 	if p.sink != nil {
 		log.Fatal("cannot add stages after sink is set")
 	}
-
 	inputChan := p.source.out
 	if len(p.stages) > 0 {
 		inputChan = p.stages[len(p.stages)-1].out
 	}
-
 	p.stages = append(p.stages, newStage(name, threads, transform, inputChan))
 }
 
