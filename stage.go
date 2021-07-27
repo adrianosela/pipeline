@@ -28,31 +28,25 @@ func newStage(name string, threads int, action transform, in chan interface{}) *
 func (s *stage) run() {
 	log.Printf("[STAGE:<%s>] Starting...\n", s.name)
 
-	var wg sync.WaitGroup
-
-	wg.Add(s.threads)
-	for t := 0; t < s.threads; t++ {
-		go func(threadId int) {
-			defer wg.Done()
-			for {
-				received, ok := <-s.in
-				if !ok {
-					log.Printf("[STAGE:<%s-%d>] Input channel closed. Thread terminating...\n", s.name, threadId)
-					break
-				}
-
-				processed, err := s.transform(received)
-				if err != nil {
-					log.Printf("[STAGE:<%s-%d>] Processing error: %s.\n", s.name, threadId, err)
-					continue
-				}
-
-				s.out <- processed
+	threaded(s.threads, func(threadId int, wg *sync.WaitGroup) {
+		defer wg.Done()
+		for {
+			received, ok := <-s.in
+			if !ok {
+				log.Printf("[STAGE:<%s-%d>] Input channel closed. Thread terminating...\n", s.name, threadId)
+				break
 			}
-		}(t)
-	}
 
-	wg.Wait()
+			processed, err := s.transform(received)
+			if err != nil {
+				log.Printf("[STAGE:<%s-%d>] Processing error: %s.\n", s.name, threadId, err)
+				continue
+			}
+
+			s.out <- processed
+		}
+	})
+
 	log.Printf("[STAGE:<%s>] All threads terminated. Closing output channel...\n", s.name)
 	close(s.out)
 }

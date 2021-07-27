@@ -51,7 +51,7 @@ func writeRepoName(in interface{}) error {
 	if !ok {
 		return fmt.Errorf("received non string input")
 	}
-	if n, err := outFile.Write([]byte(repoName + "\n")); n != len(repoName) + 1|| err != nil {
+	if n, err := outFile.Write([]byte(repoName + "\n")); n != len(repoName)+1 || err != nil {
 		return fmt.Errorf("error writing output: %s", repoName)
 	}
 	return nil
