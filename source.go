@@ -32,8 +32,6 @@ func (s *source) run() {
 		recvd, err := s.action()
 		if err != nil {
 			if err == ErrorSourceFinished {
-				log.Printf("[SOURCE:<%s>] Source finished. Closing output channel...\n", s.name)
-				close(s.out)
 				break
 			}
 
@@ -43,4 +41,7 @@ func (s *source) run() {
 
 		s.out <- recvd
 	}
+
+	log.Printf("[SOURCE:<%s>] Source finished. Closing output channel...\n", s.name)
+	close(s.out)
 }
